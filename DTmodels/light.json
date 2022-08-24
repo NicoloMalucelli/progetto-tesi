@@ -1,0 +1,13 @@
+{
+  "@id": "dtmi:contosocom:DigitalTwins:Light;1",
+  "@type": "Interface",
+  "displayName": "Light",
+  "@context": "dtmi:dtdl:context;2",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "isOn",
+      "schema": "boolean"
+    }
+  ]
+}
