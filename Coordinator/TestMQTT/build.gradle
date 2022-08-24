@@ -21,6 +21,6 @@ dependencies {
 	implementation 'org.slf4j:slf4j-api:1.7.25'
 	implementation 'org.slf4j:slf4j-jdk14:1.7.36'
 	
-	
-
+	/* Azure Digital Twin */
+	implementation 'com.azure:azure-digitaltwins-core:1.0.0'
 }

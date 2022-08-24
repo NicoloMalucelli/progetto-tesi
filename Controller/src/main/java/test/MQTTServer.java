@@ -6,6 +6,14 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.azure.core.credential.TokenCredential;
+import com.azure.core.models.JsonPatchDocument;
+import com.azure.digitaltwins.core.BasicDigitalTwin;
+import com.azure.digitaltwins.core.DigitalTwinsClient;
+import com.azure.digitaltwins.core.DigitalTwinsClientBuilder;
+import com.azure.digitaltwins.core.models.DigitalTwinsModelData;
+import com.azure.identity.DefaultAzureCredentialBuilder;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mqtt.MqttAuth;
@@ -14,7 +22,34 @@ import io.vertx.mqtt.MqttServer;
 public class MQTTServer {
 
 	public static void main(String[] args) {
+		
+		//DT platform authentication
+		
+		TokenCredential credential = new DefaultAzureCredentialBuilder().build();
+		System.out.println(credential);
+		
+		
+		DigitalTwinsClient dtClient = new DigitalTwinsClientBuilder()
+				.credential(credential)
+				.endpoint("https://DT-prova.api.weu.digitaltwins.azure.net")
+				.buildClient();  
+				
+		BasicDigitalTwin dt = dtClient.getDigitalTwin("sensorBoard-01", BasicDigitalTwin.class);
+		System.out.println(dt.getContents());
 
+		/*
+		JsonPatchDocument jsonPatchDocument = new JsonPatchDocument();
+		jsonPatchDocument.appendAdd("/Brightness", 23.0);
+
+		dtClient.updateDigitalTwin(
+		     "sensorBoard-01",
+		     jsonPatchDocument);
+		*/
+		
+		//dtClient.createModels(dtdlModels);
+		
+		//SERVER
+		
 		Map<String, String> users = new ConcurrentHashMap<>();
 		Map<String, String> devices = new ConcurrentHashMap<>();
 		
@@ -60,7 +95,7 @@ public class MQTTServer {
 					 return;
 				 }
 				 if(devices.values().contains(payload.getString("device-id"))) {
-					 //esiste già un dispositivo con l'id dato ma non corrisponde all'utente
+					 //esiste giï¿½ un dispositivo con l'id dato ma non corrisponde all'utente
 					 //TODO dire alla sorgente di cambiare device-id
 					 return;
 				 }
