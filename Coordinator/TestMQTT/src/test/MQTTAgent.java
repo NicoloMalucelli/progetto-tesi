@@ -30,7 +30,7 @@ public class MQTTAgent extends AbstractVerticle {
 	public void start() {		
 		MqttClient client = MqttClient.create(vertx);
 		///*"broker.mqtt-dashboard.com"*/
-		client.connect(1883, "127.0.0.1", c -> {
+		client.connect(1883, "192.168.178.104", c -> {
 
 			log("connected");
 			

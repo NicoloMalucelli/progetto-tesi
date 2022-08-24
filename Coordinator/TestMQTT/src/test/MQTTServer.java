@@ -1,7 +1,9 @@
 package test;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
 import io.vertx.mqtt.MqttServer;
+import io.vertx.mqtt.MqttWill;
 
 public class MQTTServer {
 
@@ -17,19 +19,11 @@ public class MQTTServer {
 		  if (endpoint.auth() != null) {
 		    System.out.println("[username = " + endpoint.auth().getUsername() + ", password = " + endpoint.auth().getPassword() + "]");
 		  }
-		  System.out.println(endpoint.will());
-		  if (endpoint.will() != null) {
-			final byte[] rawPayload = endpoint.will().getWillMessageBytes();
-			final String payload = rawPayload == null ? "null" : new String(rawPayload);
-		    System.out.println("[will topic = " + endpoint.will().getWillTopic() + 
-		    				   " msg = " + payload +
-		    				   " QoS = " + endpoint.will().getWillQos() + 
-		    				   " isRetain = " + endpoint.will().isWillRetain() + "]");
-		  }
-	
-		  System.out.println("[keep alive timeout = " + endpoint.keepAliveTimeSeconds() + "]");
-	
-		  // accept connection from the remote client
+		 
+		  endpoint.publishHandler(message -> {
+			 System.out.println("Message received: topic: " + message.topicName() + "; payload: " + message.payload());
+		  });
+		  
 		  endpoint.accept(false);
 	
 		})
@@ -44,5 +38,7 @@ public class MQTTServer {
 		      ar.cause().printStackTrace();
 		    }
 		  });
+		
 	}
+
 }
