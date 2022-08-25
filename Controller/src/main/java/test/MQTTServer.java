@@ -88,8 +88,12 @@ public class MQTTServer {
 			 System.out.println("Message received from " +  auth.getUsername() + " on topic " + message.topicName() + ": " + message.payload());
 			 final JsonObject payload= new JsonObject(message.payload());
 			 
-			 for (MqttEndpoint e : subscriptions.get(message.topicName())) {
-				e.publish(message.topicName(), message.payload(), MqttQoS.AT_LEAST_ONCE, false, false);
+			 for (String s : subscriptions.keySet()) {
+				if(message.topicName().startsWith(s + "/") || message.topicName().equals(s)) {
+					for (MqttEndpoint e : subscriptions.get(s)) {
+						e.publish(message.topicName(), message.payload(), MqttQoS.AT_LEAST_ONCE, false, false);
+					}
+				}
 			 }
 			 
 			 if(message.topicName().equals("createAndBind")) {
