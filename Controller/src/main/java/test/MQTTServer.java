@@ -3,14 +3,24 @@ package test;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import digitalTwin.DtManager;
+import io.netty.handler.codec.mqtt.MqttProperties;
+import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.ConcurrentHashSet;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mqtt.MqttAuth;
+import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.MqttServer;
+import io.vertx.mqtt.MqttTopicSubscription;
+import io.vertx.mqtt.messages.codes.MqttSubAckReasonCode;
 
 public class MQTTServer {
 
@@ -19,6 +29,7 @@ public class MQTTServer {
 		
 		Map<String, String> users = new ConcurrentHashMap<>();
 		Map<String, String> devices = new ConcurrentHashMap<>();
+		Map<String, Set<MqttEndpoint>> subscriptions = new ConcurrentHashMap<>();
 		
 		Vertx vertx = Vertx.vertx();
 		MqttServer mqttServer = MqttServer.create(vertx);
@@ -51,12 +62,36 @@ public class MQTTServer {
 			  users.put(auth.getUsername(), sha256(auth.getPassword()));
 		  }
 		  
+		  endpoint.subscribeHandler(subscribe -> {
+
+			  List<MqttSubAckReasonCode> reasonCodes = new ArrayList<>();
+			  for (MqttTopicSubscription s: subscribe.topicSubscriptions()) {
+			    System.out.println("Subscription for " + s.topicName() + " with QoS " + s.qualityOfService());
+			    reasonCodes.add(MqttSubAckReasonCode.qosGranted(s.qualityOfService()));
+			    if(subscriptions.get(s.topicName()) == null) {
+			    	subscriptions.put(s.topicName(), new ConcurrentHashSet<>());
+			    }
+			    subscriptions.get(s.topicName()).add(endpoint);
+			  }
+			  // ack the subscriptions request
+			  endpoint.subscribeAcknowledge(subscribe.messageId(), reasonCodes, MqttProperties.NO_PROPERTIES);
+			  
+			  
+
+		  });
+		  
+		  
 		  endpoint.publishHandler(message -> {
 			 if(!endpoint.isConnected()) {
 				 return;
 			 }
 			 System.out.println("Message received from " +  auth.getUsername() + " on topic " + message.topicName() + ": " + message.payload());
 			 final JsonObject payload= new JsonObject(message.payload());
+			 
+			 for (MqttEndpoint e : subscriptions.get(message.topicName())) {
+				e.publish(message.topicName(), message.payload(), MqttQoS.AT_LEAST_ONCE, false, false);
+			 }
+			 
 			 if(message.topicName().equals("createAndBind")) {
 				 //wrong message format
 				 if(!payload.containsKey("device-id") || !payload.containsKey("model-id")) {
@@ -76,13 +111,12 @@ public class MQTTServer {
 				 String deviceId = devices.get(auth.getUsername());
 				 dtManager.shadowDT(deviceId, payload);
 			 }
-			 
 		  });
 		  
 		  endpoint.accept(false);
-	
-		})
-		  .listen(ar -> {
+		});
+		  
+		mqttServer.listen(ar -> {
 	
 		    if (ar.succeeded()) {
 	
