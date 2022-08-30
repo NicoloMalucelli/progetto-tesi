@@ -1,10 +1,14 @@
 package digitalTwin;
 
+import java.awt.dnd.DragGestureEvent;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+
+import javax.sound.sampled.TargetDataLine;
 
 import com.azure.core.credential.TokenCredential;
 import com.azure.core.http.rest.PagedIterable;
@@ -180,6 +184,30 @@ public class DtManager {
 			out.add(dt.getId());
 		}
 		return out;
+	}
+	
+	public Set<BasicDigitalTwin> getAllDTs(){
+		String query = "SELECT * FROM DIGITALTWINS T";
+		PagedIterable<BasicDigitalTwin> res = dtClient.query(query, BasicDigitalTwin.class);
+		Set<BasicDigitalTwin> out = new HashSet<>();
+		for (BasicDigitalTwin dt : res) {
+			out.add(dt);
+		}
+		return out;
+	}
+	
+	public Set<BasicDigitalTwin> getDTsOf(String model){
+		return getAllDTs().stream()
+				.filter(dt -> dt.getMetadata().getModelId().equals(model))
+				.collect(Collectors.toSet());
+	}
+	
+	public void deleteRelationship(String src, String rel) {
+		dtClient.deleteRelationship(src, rel);
+	}
+	
+	public void createRelationship(String src, String dest) {
+		
 	}
 	
 	//dtClient.createModels(dtdlModels);
