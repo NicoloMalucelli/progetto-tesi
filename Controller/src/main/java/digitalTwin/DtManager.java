@@ -207,7 +207,7 @@ public class DtManager {
 	}
 	
 	public void createRelationship(String src, String dest) {
-		
+		dtClient.createOrReplaceRelationship(src, dest, null, null)
 	}
 	
 	//dtClient.createModels(dtdlModels);
