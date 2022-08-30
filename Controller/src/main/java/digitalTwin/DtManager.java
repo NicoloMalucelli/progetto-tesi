@@ -1,10 +1,13 @@
 package digitalTwin;
 
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 
 import com.azure.core.credential.TokenCredential;
+import com.azure.core.http.rest.PagedIterable;
 import com.azure.core.models.JsonPatchDocument;
 import com.azure.digitaltwins.core.BasicDigitalTwin;
 import com.azure.digitaltwins.core.BasicDigitalTwinMetadata;
@@ -35,6 +38,8 @@ public class DtManager {
 				.credential(credential)
 				.endpoint("https://DT-prova.api.weu.digitaltwins.azure.net")
 				.buildClient();
+		
+		dts.addAll(getDTsId());
 	}
 	
 	public void setMQTTBroker(MQTTBroker mqttBroker) {
@@ -60,7 +65,9 @@ public class DtManager {
 	}
 	
 	public void createDT(final String dtId, final String modelId) {
-		
+		if(dts.contains(dtId)) {
+			return;
+		}
 		new Thread(() -> {
 			BasicDigitalTwin basicTwin = new BasicDigitalTwin(dtId)
 				.setMetadata(
@@ -163,6 +170,16 @@ public class DtManager {
 
 	private boolean dtExist(String id) {
 		return dts.contains(id);
+	}
+	
+	private Set<String> getDTsId(){
+		String query = "SELECT T.$dtId FROM DIGITALTWINS T";
+		PagedIterable<BasicDigitalTwin> res = dtClient.query(query, BasicDigitalTwin.class);
+		Set<String> out = new HashSet<>();
+		for (BasicDigitalTwin dt : res) {
+			out.add(dt.getId());
+		}
+		return out;
 	}
 	
 	//dtClient.createModels(dtdlModels);

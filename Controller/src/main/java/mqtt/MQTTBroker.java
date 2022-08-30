@@ -94,10 +94,7 @@ public class MQTTBroker {
 				 if(!payload.containsKey("device-id") || !payload.containsKey("model-id")) {
 					 return;
 				 }
-				 //the device has already a DT
-				 if(devices.values().contains(payload.getString("device-id"))) {
-					 return;
-				 }
+				 
 				 //create new device's digital twin
 				 devices.put(auth.getUsername(), payload.getString("device-id"));
 				 dtManager.createDT(payload.getString("device-id"), payload.getString("model-id"));
