@@ -1,10 +1,8 @@
 package digitalTwin;
 
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
 
 import com.azure.core.credential.TokenCredential;
 import com.azure.core.models.JsonPatchDocument;
@@ -16,24 +14,49 @@ import com.azure.identity.DefaultAzureCredentialBuilder;
 
 import io.vertx.core.impl.ConcurrentHashSet;
 import io.vertx.core.json.JsonObject;
+import mqtt.MQTTBroker;
 
 public class DtManager {
 	
 	private static int TIMEOUT = 10000;
 	
+	private MQTTBroker mqttBroker;
+	
 	private final DigitalTwinsClient dtClient;
 	private final Set<String> dts = new ConcurrentHashSet<>();
+	private final ConcurrentHashMap<String, Reaction> reactions = new ConcurrentHashMap<>();
 	
 	
 	public DtManager() {
 		//DT platform authentication
-		
 		TokenCredential credential = new DefaultAzureCredentialBuilder().build();
 		
 		dtClient = new DigitalTwinsClientBuilder()
 				.credential(credential)
 				.endpoint("https://DT-prova.api.weu.digitaltwins.azure.net")
-				.buildClient();  
+				.buildClient();
+	}
+	
+	public void setMQTTBroker(MQTTBroker mqttBroker) {
+		this.mqttBroker = mqttBroker;
+		
+		//just for test purpose
+		reactions.put("button-01", new Reaction() {
+			
+			@Override
+			public void react(JsonObject shadowPayload) {
+				if(shadowPayload.containsKey("isPressed")) {
+					JsonObject msgPayload = new JsonObject();
+					if(shadowPayload.getBoolean("isPressed")) {
+						msgPayload.put("op", "on");
+					}else {
+						msgPayload.put("op", "off");
+					}
+					mqttBroker.publish("action/light-01", msgPayload);
+				}
+			}
+			
+		});
 	}
 	
 	public void createDT(final String dtId, final String modelId) {
@@ -100,6 +123,8 @@ public class DtManager {
 			
 			System.out.println(dtId + " has been shadowed: " + payload);
 			
+			this.react(dtId, payload);
+			
 		}).start();
 	}
 	
@@ -121,8 +146,19 @@ public class DtManager {
 		return dtClient.getDigitalTwin(id, BasicDigitalTwin.class);
 	}
 	
-	public void react(String dtId) {
-		//TODO eseguire le azioni corrispondenti al DT indicato
+	public void react(String dtId, JsonObject payload) {
+		/*
+		Process p = Runtime.getRuntime().exec("python ");
+		BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		String line = "";
+		while ((line = reader.readLine()) != null) {
+		    System.out.println(line + "\n");
+		}
+		*/
+		if(reactions.keySet().contains(dtId)) {
+			System.out.println("reacting");
+			reactions.get(dtId).react(payload);
+		}
 	}
 
 	private boolean dtExist(String id) {

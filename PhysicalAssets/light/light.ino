@@ -1,16 +1,12 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
-#define BUTTON_PIN 5
+
+#define LIGHT_PIN 19
 
 const char* ssid = "EOLO - FRITZ!Box 7430 YT";
 const char* password = "41195728343377587300";
-
-int light;
-int temp;
-bool needConnection = false;
-bool publishRequest = false;
-long lastClick = 0;
 
 WiFiClient wifiClient;
 PubSubClient client(wifiClient); 
@@ -20,10 +16,11 @@ int mqttPort = 1883;
 
 void connectToBroker() {
   client.setServer(mqttServer, mqttPort);
+  client.setCallback(callback);
   Serial.println("Connecting to MQTT Broker...");
   String clientId = String("esp32")+String(random(0xffff), HEX);
   while (!client.connected()) {
-      if(client.connect(clientId.c_str(), "Esp32-button", "PXvSHt")){
+      if(client.connect(clientId.c_str(), "Esp32-light", "PXvSHt")){
          Serial.println("connected"); 
       }else{
         delay(3000);
@@ -32,12 +29,14 @@ void connectToBroker() {
   }
   
   Serial.println("binding");
-  client.publish("createAndBind", "{\"device-id\":\"button-01\", \"model-id\":\"dtmi:contosocom:DigitalTwins:Button;1\"}");
+  client.publish("createAndBind", "{\"device-id\":\"light-01\", \"model-id\":\"dtmi:contosocom:DigitalTwins:Light;1\"}");
   Serial.println("binded");
   Serial.println("shadowing");
-  client.publish("shadowing", "{\"isPressed\":false}");
+  client.publish("shadowing", "{\"isOn\":false}");
   Serial.println("shadowed");
-  
+
+  client.subscribe("action/light-01");
+  Serial.println("subscribed to action/light-01");
 }
 
 void connectToWifi(const char* ssid, const char* password){
@@ -57,34 +56,46 @@ void connectToWifi(const char* ssid, const char* password){
 
 void setup() {
   Serial.begin(115200);
-  pinMode(BUTTON_PIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), sendData, CHANGE);
+  pinMode(LIGHT_PIN, OUTPUT);
   connectToWifi(ssid, password);
-
 }
 
 void loop() {
-  if(publishRequest){
     if(WiFi.status()== WL_CONNECTED && client.connected()){
-      publishRequest = false;
-      Serial.println("shadowing");
-      if(digitalRead(BUTTON_PIN) == HIGH){
-        client.publish("shadowing", "{\"isPressed\":true}");
-      }else{
-        client.publish("shadowing", "{\"isPressed\":false}");
-      }
-      Serial.println("shadowed");
+      client.loop();
     }else{
       connectToWifi(ssid, password);
-    }
-  }
+    } 
 }
 
-void sendData(){
-  if(millis() - lastClick < 200){
-    return;
+void callback(char* topic, byte* message, unsigned int length) {
+  Serial.print("Message arrived on topic: ");
+  Serial.print(topic);
+  Serial.print(". Message: ");
+  String messageTemp;
+  
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)message[i]);
+    messageTemp += (char)message[i];
   }
-  lastClick = millis();
-  publishRequest = true;
-  return;
+
+  char msgChar[messageTemp.length() + 1];
+  messageTemp.toCharArray(msgChar, messageTemp.length() + 1);
+  
+  StaticJsonDocument<200> doc;
+  deserializeJson(doc, msgChar);
+  const char* out = doc["op"];
+
+  
+  if (String(topic) == "action/light-01") {
+    if((String)out == "on"){
+      Serial.println("on");
+      digitalWrite(LIGHT_PIN, HIGH);
+    }
+    else if((String)out == "off"){
+      Serial.println("off");
+      digitalWrite(LIGHT_PIN, LOW);
+    }
+  }
+  
 }

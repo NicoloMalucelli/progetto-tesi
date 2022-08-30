@@ -12,14 +12,30 @@ import json
 username = "lightEmulator37642"
 password = "password"
 
+lightOn = False;
+
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
-    client.subscribe("action/" + username)
-    print("Subscribed to action/" + username)
+    client.subscribe("action/light-01")
+    print("Subscribed to action/light-01")
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
+    payload = json.loads(msg.payload.decode())
+    if('op' in payload):
+        global lightOn
+        if payload['op'] == 'onClick':
+            lightOn = not lightOn
+        if payload['op'] == 'on':
+            lightOn = True
+        if payload['op'] == 'off':
+            lightOn = False
+            
+    print("lightOn: " + 'on' if lightOn else 'off')
+    shadowingInfo = {'isOn': lightOn}
+    client.publish("shadowing", json.dumps(shadowingInfo), 1);    
+        
     print("Received " + str(msg.payload))
 
 client = mqtt.Client()
@@ -33,7 +49,7 @@ payload ={'device-id':'light-01',
           'model-id':'dtmi:contosocom:DigitalTwins:Light;1'}
 client.publish("createAndBind", json.dumps(payload), 1);
 
-shadowingInfo = {'isOn': False}
+shadowingInfo = {'isOn': lightOn}
 client.publish("shadowing", json.dumps(shadowingInfo), 1);
 
 client.loop_forever()

@@ -11,6 +11,7 @@
       },
       {
         "@type": "Relationship",
+        "@id": "dtmi:com:adt:dtsample:button:control;1",
         "name": "control"
       }
     ]

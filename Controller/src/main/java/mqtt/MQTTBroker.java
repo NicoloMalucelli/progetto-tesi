@@ -1,10 +1,9 @@
-package test;
+package mqtt;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,14 +21,17 @@ import io.vertx.mqtt.MqttServer;
 import io.vertx.mqtt.MqttTopicSubscription;
 import io.vertx.mqtt.messages.codes.MqttSubAckReasonCode;
 
-public class MQTTServer {
+public class MQTTBroker {
+	
+	private final DtManager dtManager;
+	
+	private final Map<String, String> users = new ConcurrentHashMap<>();
+	private final Map<String, String> devices = new ConcurrentHashMap<>();
+	private final Map<String, Set<MqttEndpoint>> subscriptions = new ConcurrentHashMap<>();
 
-	public static void main(String[] args) {
-		final DtManager dtManager = new DtManager();
-		
-		Map<String, String> users = new ConcurrentHashMap<>();
-		Map<String, String> devices = new ConcurrentHashMap<>();
-		Map<String, Set<MqttEndpoint>> subscriptions = new ConcurrentHashMap<>();
+	public MQTTBroker(DtManager dtManager) {
+		this.dtManager = dtManager;
+		this.dtManager.setMQTTBroker(this);
 		
 		Vertx vertx = Vertx.vertx();
 		MqttServer mqttServer = MqttServer.create(vertx);
@@ -75,9 +77,6 @@ public class MQTTServer {
 			  }
 			  // ack the subscriptions request
 			  endpoint.subscribeAcknowledge(subscribe.messageId(), reasonCodes, MqttProperties.NO_PROPERTIES);
-			  
-			  
-
 		  });
 		  
 		  
@@ -88,13 +87,7 @@ public class MQTTServer {
 			 System.out.println("Message received from " +  auth.getUsername() + " on topic " + message.topicName() + ": " + message.payload());
 			 final JsonObject payload= new JsonObject(message.payload());
 			 
-			 for (String s : subscriptions.keySet()) {
-				if(message.topicName().startsWith(s + "/") || message.topicName().equals(s)) {
-					for (MqttEndpoint e : subscriptions.get(s)) {
-						e.publish(message.topicName(), message.payload(), MqttQoS.AT_LEAST_ONCE, false, false);
-					}
-				}
-			 }
+			 publish(message.topicName(), payload);
 			 
 			 if(message.topicName().equals("createAndBind")) {
 				 //wrong message format
@@ -134,7 +127,18 @@ public class MQTTServer {
 		
 	}
 	
-	public static String sha256(String s) {
+	public void publish(String topic, JsonObject payload) {
+		for (String s : subscriptions.keySet()) {
+			if(topic.startsWith(s + "/") || topic.equals(s)) {
+				for (MqttEndpoint e : subscriptions.get(s)) {
+					e.publish(topic, payload.toBuffer(), MqttQoS.AT_LEAST_ONCE, false, false);
+					System.out.println("message redirected to " + e.auth().getUsername());
+				}
+			}
+		 }
+	}
+	
+	private String sha256(String s) {
 		MessageDigest digest;
 		try {
 			digest = MessageDigest.getInstance("SHA3-256");
