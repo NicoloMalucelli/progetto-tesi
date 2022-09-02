@@ -1,4 +1,4 @@
-package mqtt;
+package controller.mqtt;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import digitalTwin.DtManager;
+import controller.digitalTwin.DtManager;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.core.Vertx;
@@ -28,14 +28,14 @@ public class MQTTBroker {
 	private final Map<String, String> users = new ConcurrentHashMap<>();
 	private final Map<String, String> devices = new ConcurrentHashMap<>();
 	private final Map<String, Set<MqttEndpoint>> subscriptions = new ConcurrentHashMap<>();
+	private final MqttServer mqttServer; 
 
 	public MQTTBroker(DtManager dtManager) {
 		this.dtManager = dtManager;
 		this.dtManager.setMQTTBroker(this);
 		
 		Vertx vertx = Vertx.vertx();
-		MqttServer mqttServer = MqttServer.create(vertx);
-		
+		mqttServer = MqttServer.create(vertx);
 		mqttServer.exceptionHandler(t -> System.out.println("refused message"));
 		
 		mqttServer.endpointHandler(endpoint -> {
@@ -109,9 +109,12 @@ public class MQTTBroker {
 		  
 		  endpoint.accept(false);
 		});
-		  
-		mqttServer.listen(ar -> {
+		
+	}
 	
+	public void start() {
+		mqttServer.listen(ar -> {
+			
 		    if (ar.succeeded()) {
 	
 		      System.out.println("MQTT server is listening on port " + ar.result().actualPort());
@@ -120,8 +123,7 @@ public class MQTTBroker {
 		      System.out.println("Error on starting the server");
 		      ar.cause().printStackTrace();
 		    }
-		  });
-		
+		});
 	}
 	
 	public void publish(String topic, JsonObject payload) {

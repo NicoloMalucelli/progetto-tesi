@@ -1,0 +1,13 @@
+{
+    "@id": "dtmi:progettotesi:room;1",
+    "@type": "Interface",
+    "displayName": "Room",
+    "@context": "dtmi:dtdl:context;2",
+    "contents": [
+        {
+          "@type": "Property",
+          "name": "alive",
+          "schema": "boolean"
+        }
+    ]
+}

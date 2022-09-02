@@ -1,13 +1,24 @@
 {
-  "@id": "dtmi:contosocom:DigitalTwins:Light;1",
+  "@id": "dtmi:progettotesi:light;1",
   "@type": "Interface",
   "displayName": "Light",
   "@context": "dtmi:dtdl:context;2",
   "contents": [
     {
       "@type": "Property",
+      "name": "alive",
+      "schema": "boolean"
+    },
+    {
+      "@type": "Property",
       "name": "isOn",
       "schema": "boolean"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:progettotesi:light:contained;1",
+      "target": "dtmi:progettotesi:room;1",
+      "name": "Contained"
     }
   ]
 }

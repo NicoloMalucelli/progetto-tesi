@@ -1,9 +1,14 @@
 {
-    "@id": "dtmi:contosocom:DigitalTwins:Button;1",
+    "@id": "dtmi:progettotesi:button;1",
     "@type": "Interface",
     "displayName": "Button",
     "@context": "dtmi:dtdl:context;2",
     "contents": [
+      {
+        "@type": "Property",
+        "name": "alive",
+        "schema": "boolean"
+      },
       {
         "@type": "Property",
         "name": "isPressed",
@@ -11,8 +16,14 @@
       },
       {
         "@type": "Relationship",
-        "@id": "dtmi:com:adt:dtsample:button:control;1",
+        "@id": "dtmi:progettotesi:button:control;1",
         "name": "control"
+      },
+      {
+        "@type": "Relationship",
+        "@id": "dtmi:progettotesi:button:contained;1",
+        "target": "dtmi:progettotesi:room;1",
+        "name": "Contained"
       }
     ]
 }
