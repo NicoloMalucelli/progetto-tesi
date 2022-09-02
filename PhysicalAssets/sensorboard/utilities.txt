@@ -1,9 +1,0 @@
-https://test2-progetto-tesi.azure-devices.net/devices/esp-32/messages/events?api-version=2020-03-13
-
-az iot hub generate-sas-token --device-id esp-32 --hub-name test2-progetto-tesi
-Authorization
-SharedAccessSignature sr=test2-progetto-tesi.azure-devices.net%2Fdevices%2Fesp-32&sig=3v08Iu3ucYbnu4BXIQh%2B4ntCReE91qnFjdacyBXTEYQ%3D&se=1660377401
-
-"{'light': 70, 'temp': 32}"
-
-az iot hub monitor-events --output table -p all -n test2-progetto-tesi

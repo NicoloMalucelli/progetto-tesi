@@ -6,9 +6,6 @@
 const char* ssid = "EOLO - FRITZ!Box 7430 YT";
 const char* password = "41195728343377587300";
 
-int light;
-int temp;
-bool needConnection = false;
 bool publishRequest = false;
 long lastClick = 0;
 
@@ -17,6 +14,24 @@ PubSubClient client(wifiClient);
 
 char *mqttServer = "192.168.178.104";
 int mqttPort = 1883;
+
+void connectToWifi(const char* ssid, const char* password){
+  int timeout_counter = 0;
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting to WiFi");
+  while(WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+    timeout_counter++;
+    if(timeout_counter >= 30*2){
+      Serial.println("Connection failed");
+      ESP.restart();
+    }
+  }
+  Serial.print("Connected: ");
+  Serial.println(WiFi.localIP());
+  connectToBroker();
+}
 
 void connectToBroker() {
   client.setServer(mqttServer, mqttPort);
@@ -31,28 +46,10 @@ void connectToBroker() {
       }
   }
   
-  Serial.println("binding");
-  client.publish("createAndBind", "{\"device-id\":\"button-01\", \"model-id\":\"dtmi:contosocom:DigitalTwins:Button;1\"}");
-  Serial.println("binded");
-  Serial.println("shadowing");
+  Serial.println("Binding...");
+  client.publish("createAndBind", "{\"device-id\":\"button-01\", \"model-id\":\"dtmi:progettotesi:button;1\"}");
+  Serial.println("Shadowing...");
   client.publish("shadowing", "{\"isPressed\":false}");
-  Serial.println("shadowed");
-  
-}
-
-void connectToWifi(const char* ssid, const char* password){
-  int timeout_counter = 0;
-  WiFi.begin(ssid, password);
-  while(WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
-    delay(500);
-    timeout_counter++;
-    if(timeout_counter >= 30*2){
-      ESP.restart();
-    }
-  }
-  Serial.println(WiFi.localIP());
-  connectToBroker();
 }
 
 void setup() {
@@ -60,28 +57,26 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT);
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), sendData, CHANGE);
   connectToWifi(ssid, password);
-
 }
 
 void loop() {
-  if(publishRequest){
-    if(WiFi.status()== WL_CONNECTED && client.connected()){
+  if(WiFi.status()== WL_CONNECTED && client.connected()){
+    if(publishRequest){
       publishRequest = false;
-      Serial.println("shadowing");
+      Serial.println("Shadowing...");
       if(digitalRead(BUTTON_PIN) == HIGH){
         client.publish("shadowing", "{\"isPressed\":true}");
       }else{
         client.publish("shadowing", "{\"isPressed\":false}");
       }
-      Serial.println("shadowed");
-    }else{
-      connectToWifi(ssid, password);
     }
+  }else{
+      connectToWifi(ssid, password);
   }
 }
 
 void sendData(){
-  if(millis() - lastClick < 200){
+  if(millis() - lastClick < 100){
     return;
   }
   lastClick = millis();
