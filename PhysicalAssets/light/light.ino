@@ -28,15 +28,13 @@ void connectToBroker() {
       }
   }
   
-  Serial.println("binding");
+  Serial.println("Binding...");
   client.publish("createAndBind", "{\"device-id\":\"light-01\", \"model-id\":\"dtmi:contosocom:DigitalTwins:Light;1\"}");
-  Serial.println("binded");
-  Serial.println("shadowing");
+  Serial.println("Shadowing...");
   client.publish("shadowing", "{\"isOn\":false}");
-  Serial.println("shadowed");
 
+  Serial.println("subscribing to action/light-01");
   client.subscribe("action/light-01");
-  Serial.println("subscribed to action/light-01");
 }
 
 void connectToWifi(const char* ssid, const char* password){
@@ -86,7 +84,6 @@ void callback(char* topic, byte* message, unsigned int length) {
   deserializeJson(doc, msgChar);
   const char* out = doc["op"];
 
-  
   if (String(topic) == "action/light-01") {
     if((String)out == "on"){
       Serial.println("on");

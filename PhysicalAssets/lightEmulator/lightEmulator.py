@@ -5,9 +5,9 @@ Created on Thu Aug 25 10:41:55 2022
 @author: Nicolò
 """
 
-
 import paho.mqtt.client as mqtt
 import json
+import threading
 
 username = "lightEmulator37642"
 password = "password"
@@ -22,21 +22,23 @@ def on_connect(client, userdata, flags, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    payload = json.loads(msg.payload.decode())
-    if('op' in payload):
-        global lightOn
-        if payload['op'] == 'onClick':
-            lightOn = not lightOn
-        if payload['op'] == 'on':
-            lightOn = True
-        if payload['op'] == 'off':
-            lightOn = False
-            
-    print("lightOn: " + 'on' if lightOn else 'off')
-    shadowingInfo = {'isOn': lightOn}
-    client.publish("shadowing", json.dumps(shadowingInfo), 1);    
+    if msg.topic ==  "action/light-01":
+        payload = json.loads(msg.payload.decode())
+        if('op' in payload):
+            global lightOn
+            if payload['op'] == 'on':
+                lightOn = True
+            if payload['op'] == 'off':
+                lightOn = False
+                
+        print("lightOn: " + 'on' if lightOn else 'off')
+        shadowingInfo = {'isOn': lightOn}
+        client.publish("shadowing", json.dumps(shadowingInfo), 1);    
         
     print("Received " + str(msg.payload))
+
+def keep_alive():
+    client.publish("keepAlive", "", 1);
 
 client = mqtt.Client()
 client.on_connect = on_connect
@@ -51,5 +53,7 @@ client.publish("createAndBind", json.dumps(payload), 1);
 
 shadowingInfo = {'isOn': lightOn}
 client.publish("shadowing", json.dumps(shadowingInfo), 1);
+
+threading.Timer(50.0, keep_alive).start()
 
 client.loop_forever()
