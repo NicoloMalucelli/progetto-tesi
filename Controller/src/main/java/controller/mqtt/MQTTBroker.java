@@ -104,6 +104,12 @@ public class MQTTBroker {
 				 }
 				 String deviceId = devices.get(auth.getUsername());
 				 dtManager.shadowDT(deviceId, payload);
+			 }else if(message.topicName().equals("keepAlive")) {
+				 if(!devices.containsKey(auth.getUsername())) {
+					 return;
+				 }
+				 String dtId = devices.get(auth.getUsername());
+				 dtManager.keepAlive(dtId);
 			 }
 		  });
 		  
