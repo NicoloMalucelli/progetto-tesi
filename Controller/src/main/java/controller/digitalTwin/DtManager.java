@@ -59,7 +59,7 @@ public class DtManager {
 		
 		this.synchRelationships();
 		
-		//startCheckConnectionRoutine();
+		startCheckConnectionRoutine();
 	}
 	
 	public void setMQTTBroker(MQTTBroker mqttBroker) {

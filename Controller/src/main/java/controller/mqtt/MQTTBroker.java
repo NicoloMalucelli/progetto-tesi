@@ -85,8 +85,21 @@ public class MQTTBroker {
 				 return;
 			 }
 			 System.out.println("Message received from " +  auth.getUsername() + " on topic " + message.topicName() + ": " + message.payload());
-			 final JsonObject payload= new JsonObject(message.payload());
 			 
+			 if(message.topicName().equals("keepAlive")) {
+				 if(!devices.containsKey(auth.getUsername())) {
+					 return;
+				 }
+				 String dtId = devices.get(auth.getUsername());
+				 dtManager.keepAlive(dtId);
+				 return;
+			 }
+			 
+			 if(!isJSONValid(message.payload().toString())) {
+				 return;
+			 }
+			 
+			 final JsonObject payload= new JsonObject(message.payload());
 			 publish(message.topicName(), payload);
 			 
 			 if(message.topicName().equals("createAndBind")) {
@@ -95,21 +108,25 @@ public class MQTTBroker {
 					 return;
 				 }
 				 
+				 if(devices.values().contains(payload.getValue("device-id")) &&
+						 (!devices.keySet().contains(auth.getUsername()) || 
+						  !devices.get(auth.getUsername()).equals(payload.getValue("device-id"))
+					 )
+					) {
+					 //id already paired with an other username
+					 System.out.println("id already paired with an other username");
+					 return;
+				 }
+				 
 				 //create new device's digital twin
 				 devices.put(auth.getUsername(), payload.getString("device-id"));
 				 dtManager.createDT(payload.getString("device-id"), payload.getString("model-id"));
-			 }else if(message.topicName().equals("shadowing")) {
+			 }else if(message.topicName().equals("shadowing") || message.topicName().startsWith("shadowing/")) {
 				 if(!devices.containsKey(auth.getUsername())) {
 					 return;
 				 }
 				 String deviceId = devices.get(auth.getUsername());
 				 dtManager.shadowDT(deviceId, payload);
-			 }else if(message.topicName().equals("keepAlive")) {
-				 if(!devices.containsKey(auth.getUsername())) {
-					 return;
-				 }
-				 String dtId = devices.get(auth.getUsername());
-				 dtManager.keepAlive(dtId);
 			 }
 		  });
 		  
@@ -156,6 +173,15 @@ public class MQTTBroker {
 			e.printStackTrace();
 		}
 		return s;
+	}
+	
+	private boolean isJSONValid(String test) {
+	    try {
+	        new JsonObject(test);
+	    } catch (Exception ex) {
+	    	return false;
+	    }
+	    return true;
 	}
 
 }
