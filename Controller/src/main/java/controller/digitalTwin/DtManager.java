@@ -82,11 +82,7 @@ public class DtManager {
 				JsonObject content = contents.getJsonObject(i);
 				if(content.getString("@type").equals("Property")) {
 					if(content.getString("schema").equals("boolean")) {
-						if(content.getString("name").equals("alive")) {
-							jsonPatchDocument.appendAdd("/alive", true);
-						}else {
-							jsonPatchDocument.appendAdd("/" + content.getString("name"), false);
-						}
+						jsonPatchDocument.appendAdd("/" + content.getString("name"), false);
 					}//else if().... other schemas
 				}
 			}
@@ -103,20 +99,15 @@ public class DtManager {
 				BasicDigitalTwin.class);
 			
 			dtsLastCom.put(dtId, LocalDateTime.now());
+			disconnectedDTs.add(dtId);
 			
 			controller.addDT(createdTwin);
 
 			System.out.println("Created digital twin with Id: " + createdTwin.getId());
 			
-			//jsonPatchDocument.appendAdd("/alive", true);
-			
 			dtClient.updateDigitalTwin(
 					 dtId,
 					 jsonPatchDocument);
-			
-			dtsLastCom.put(dtId, LocalDateTime.now());
-			
-			//System.out.println(jsonPatchDocument);
 		}).start();
 	}
 	
@@ -124,6 +115,10 @@ public class DtManager {
 		new Thread(() -> {
 			
 			final JsonPatchDocument jsonPatchDocument = new JsonPatchDocument();
+			
+			payload.forEach(e -> {
+				jsonPatchDocument.appendReplace("/" + e.getKey(), e.getValue());
+			});
 			
 			dtClient.updateDigitalTwin(
 					 dtId,
@@ -300,7 +295,7 @@ public class DtManager {
 								 e.getKey(),
 							     jsonPatchDocument);
 						
-						System.out.println(e.getKey() + " is not alive");
+						System.out.println(e.getKey() + " is not anymore alive");
 						
 					}
 				}
