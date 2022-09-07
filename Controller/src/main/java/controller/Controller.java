@@ -60,4 +60,8 @@ public class Controller {
 	public void addDT(BasicDigitalTwin dt) {
 		view.addDT(dt);
 	}
+	
+	public void createRoom(String id) {
+		dtManager.createDT(id, "dtmi:progettotesi:room;1");
+	}
 }

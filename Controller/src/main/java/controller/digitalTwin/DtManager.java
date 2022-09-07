@@ -97,17 +97,16 @@ public class DtManager {
 				basicTwin.getId(),
 				basicTwin,
 				BasicDigitalTwin.class);
-			
-			dtsLastCom.put(dtId, LocalDateTime.now());
-			disconnectedDTs.add(dtId);
-			
-			controller.addDT(createdTwin);
 
 			System.out.println("Created digital twin with Id: " + createdTwin.getId());
 			
 			dtClient.updateDigitalTwin(
 					 dtId,
 					 jsonPatchDocument);
+			
+			dtsLastCom.put(dtId, LocalDateTime.now());
+			disconnectedDTs.add(dtId);
+			controller.addDT(createdTwin);
 		}).start();
 	}
 	
@@ -209,7 +208,6 @@ public class DtManager {
 		if(!getRelBySourceAndName(src, rel).isEmpty()) {
 			deleteRelationship(src, rel);
 		}
-		
 
 		dtClient.createOrReplaceRelationship(
 		     src,

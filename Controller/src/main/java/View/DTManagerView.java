@@ -16,6 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.JTextField;
 
 public class DTManagerView extends JFrame{
 
@@ -30,10 +31,13 @@ public class DTManagerView extends JFrame{
 	private final JButton btnRemoveRelationship = new JButton("delete relationship");
 	private final JButton btnChangeSelectedButton = new JButton("change selected button room");
 	private final JButton btnChangeSelectedLight = new JButton("change selected light room");
+	private final JButton btnCreateRoom = new JButton("create room");
 	
 	private final DefaultListModel<String> buttonsList = new DefaultListModel<>();
 	private final DefaultListModel<String> lightsList = new DefaultListModel<>();
 	private final DefaultListModel<String> roomsList = new DefaultListModel<>();
+	
+	private final JTextField newRoomId = new JTextField();
 	
 	JLabel lblButtonRoom = new JLabel("Room: ");
 	JLabel lblButtonRel = new JLabel("Controls: ");
@@ -93,11 +97,19 @@ public class DTManagerView extends JFrame{
 	    rooms.setBounds(550, 31, 224, 188);
 	    getContentPane().add(rooms);
 	    
-	    btnChangeSelectedButton.setBounds(550, 232, 224, 21);
+	    btnChangeSelectedButton.setBounds(550, 294, 224, 21);
 	    getContentPane().add(btnChangeSelectedButton);
 
-	    btnChangeSelectedLight.setBounds(550, 264, 224, 21);
+	    btnChangeSelectedLight.setBounds(550, 326, 224, 21);
 	    getContentPane().add(btnChangeSelectedLight);
+	    
+	    newRoomId.setBounds(550, 230, 224, 20);
+	    getContentPane().add(newRoomId);
+	    newRoomId.setColumns(10);
+	    
+	    btnCreateRoom.setEnabled(false);
+	    btnCreateRoom.setBounds(550, 256, 224, 21);
+	    getContentPane().add(btnCreateRoom);
 	    
 	    this.setVisible(true);
 	}
@@ -108,6 +120,16 @@ public class DTManagerView extends JFrame{
 	}
 	
 	private void initElements() {		
+		btnCreateRoom.setEnabled(true);
+		
+		btnCreateRoom.addActionListener(e -> {
+			if(newRoomId.getText().isEmpty()) {
+				return;
+			}
+			controller.createRoom(newRoomId.getText());
+			newRoomId.setText("");			
+		});
+		
 	    for (BasicDigitalTwin dt : controller.getDTsOf("dtmi:progettotesi:button;1")) {
 	    	buttonsList.addElement(dt.getId());
 		}
@@ -122,7 +144,7 @@ public class DTManagerView extends JFrame{
 	    	roomsList.addElement(dt.getId());
 		}
 		rooms.setModel(roomsList);
-	
+		
 		btnCreateRelationship.addActionListener(e -> {
 			
 			if(buttons.getSelectedIndices().length != 1) {
@@ -204,6 +226,7 @@ public class DTManagerView extends JFrame{
 				updateLightRelLabel();
 			}
 		});
+		
 	}
 	
 	private void updateRelLabels() {
