@@ -9,10 +9,9 @@ import paho.mqtt.client as mqtt
 import json
 import threading
 
-username = "Esp32-button"
-password = "PXvSHt"
+username = "buttontEmulator-03"
+password = "password"
 
-channel = "action/light-01"
 connected = False;
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -44,7 +43,7 @@ client.loop_start()
 
 threading.Timer(50.0, keep_alive).start()
 
-payload = {'device-id':"button-1", 
+payload = {'device-id':"button-03", 
            "model-id":"dtmi:progettotesi:button;1"}
 client.publish("createAndBind", json.dumps(payload), 0)
 

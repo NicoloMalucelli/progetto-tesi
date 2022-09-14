@@ -17,6 +17,9 @@ import javax.swing.JLabel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.JTextField;
+import java.awt.Font;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class DTManagerView extends JFrame{
 
@@ -29,8 +32,8 @@ public class DTManagerView extends JFrame{
 	
 	private final JButton btnCreateRelationship = new JButton("create relationship");
 	private final JButton btnRemoveRelationship = new JButton("delete relationship");
-	private final JButton btnChangeSelectedButton = new JButton("change selected button room");
-	private final JButton btnChangeSelectedLight = new JButton("change selected light room");
+	private final JButton btnChangeSelectedButton = new JButton("update the button room");
+	private final JButton btnChangeSelectedLight = new JButton("update the light room");
 	private final JButton btnCreateRoom = new JButton("create room");
 	
 	private final DefaultListModel<String> buttonsList = new DefaultListModel<>();
@@ -45,70 +48,90 @@ public class DTManagerView extends JFrame{
 	JLabel lblLightRel = new JLabel("Controlled by: ");
 	
 	public DTManagerView() {
-		super("Digital Twin Manager");
+		super("Device Manager");
 	    setSize(800, 600);
 	    setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
 	    getContentPane().setLayout(null);
+	    buttons.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    
-	    buttons.setBounds(10, 31, 250, 296);
+	    buttons.setBounds(10, 36, 250, 296);
 	    buttons.setSelectionMode(DefaultListSelectionModel.SINGLE_SELECTION);
 	    getContentPane().add(buttons);
+	    lights.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    
-	    lights.setBounds(285, 31, 250, 296);
+	    lights.setBounds(285, 36, 250, 296);
 	    lights.setSelectionMode(DefaultListSelectionModel.SINGLE_SELECTION);
 	    getContentPane().add(lights);
+	    btnCreateRelationship.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    
-	    btnCreateRelationship.setBounds(10, 436, 151, 21);
+	    btnCreateRelationship.setBounds(10, 436, 200, 21);
 	    getContentPane().add(btnCreateRelationship);
+	    btnRemoveRelationship.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    
-	    btnRemoveRelationship.setBounds(10, 468, 151, 21);
+	    btnRemoveRelationship.setBounds(10, 468, 200, 21);
 	    getContentPane().add(btnRemoveRelationship);
+	    lblButtonRoom.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    
 	    lblButtonRoom.setBounds(10, 338, 250, 37);
 	    getContentPane().add(lblButtonRoom);	    
+	    lblButtonRel.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    lblButtonRel.setVerticalAlignment(SwingConstants.TOP);
 	    
 	    lblButtonRel.setBounds(10, 388, 250, 37);
 	    getContentPane().add(lblButtonRel);
+	    lblLightRoom.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    
 	    lblLightRoom.setBounds(285, 338, 250, 37);
 	    getContentPane().add(lblLightRoom);
+	    lblLightRel.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    lblLightRel.setVerticalAlignment(SwingConstants.TOP);
 	    
 	    lblLightRel.setBounds(285, 388, 250, 131);
 	    getContentPane().add(lblLightRel);
 	    
 	    JLabel lblButtons = new JLabel("Buttons");
+	    lblButtons.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    lblButtons.setHorizontalAlignment(SwingConstants.CENTER);
-	    lblButtons.setBounds(10, 11, 250, 14);
+	    lblButtons.setBounds(10, 11, 250, 26);
 	    getContentPane().add(lblButtons);
 	    
 	    JLabel lblLights = new JLabel("Lights");
+	    lblLights.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    lblLights.setHorizontalAlignment(SwingConstants.CENTER);
-	    lblLights.setBounds(285, 11, 250, 14);
+	    lblLights.setBounds(285, 11, 250, 26);
 	    getContentPane().add(lblLights);
 	    
 	    JLabel lblRooms = new JLabel("Rooms");
+	    lblRooms.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    lblRooms.setHorizontalAlignment(SwingConstants.CENTER);
-	    lblRooms.setBounds(545, 11, 229, 14);
+	    lblRooms.setBounds(550, 17, 229, 14);
 	    getContentPane().add(lblRooms);
+	    rooms.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    
 	    rooms.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-	    rooms.setBounds(550, 31, 224, 188);
+	    rooms.setBounds(555, 36, 224, 188);
 	    getContentPane().add(rooms);
+	    btnChangeSelectedButton.addActionListener(new ActionListener() {
+	    	public void actionPerformed(ActionEvent e) {
+	    	}
+	    });
+	    btnChangeSelectedButton.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    
-	    btnChangeSelectedButton.setBounds(550, 294, 224, 21);
+	    btnChangeSelectedButton.setBounds(555, 299, 224, 21);
 	    getContentPane().add(btnChangeSelectedButton);
+	    btnChangeSelectedLight.setFont(new Font("Tahoma", Font.PLAIN, 14));
 
-	    btnChangeSelectedLight.setBounds(550, 326, 224, 21);
+	    btnChangeSelectedLight.setBounds(555, 331, 224, 21);
 	    getContentPane().add(btnChangeSelectedLight);
+	    newRoomId.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    
-	    newRoomId.setBounds(550, 230, 224, 20);
+	    newRoomId.setBounds(555, 235, 224, 20);
 	    getContentPane().add(newRoomId);
 	    newRoomId.setColumns(10);
+	    btnCreateRoom.setFont(new Font("Tahoma", Font.PLAIN, 14));
 	    
 	    btnCreateRoom.setEnabled(false);
-	    btnCreateRoom.setBounds(550, 256, 224, 21);
+	    btnCreateRoom.setBounds(555, 261, 224, 21);
 	    getContentPane().add(btnCreateRoom);
 	    
 	    this.setVisible(true);

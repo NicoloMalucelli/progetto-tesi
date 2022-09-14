@@ -9,7 +9,7 @@ import paho.mqtt.client as mqtt
 import json
 import threading
 
-username = "lightEmulator37642"
+username = "lightEmulator-03"
 password = "password"
 
 lightOn = False;
@@ -47,8 +47,8 @@ client.on_message = on_message
 client.username_pw_set(username, password=password);
 client.connect("192.168.178.104", 1883, 100)
 
-payload ={'device-id':'light-01', 
-          'model-id':'dtmi:contosocom:DigitalTwins:Light;1'}
+payload ={'device-id':'light-03', 
+          'model-id':'dtmi:progettotesi:light;1'}
 client.publish("createAndBind", json.dumps(payload), 1);
 
 shadowingInfo = {'isOn': lightOn}

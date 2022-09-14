@@ -113,6 +113,20 @@ public class DtManager {
 	public void shadowDT(final String dtId, final JsonObject payload) {
 		new Thread(() -> {
 			
+			long startTime = System.currentTimeMillis();
+			
+			while(!dtsLastCom.containsKey(dtId)) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if(System.currentTimeMillis() - startTime >= TIMEOUT) {
+					return;
+				}
+			}
+			
 			final JsonPatchDocument jsonPatchDocument = new JsonPatchDocument();
 			
 			payload.forEach(e -> {
